@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>رافد 360</title>
+<style>
+:root{--bg:#0e0f10;--card:#1a1c1e;--line:#2b2e31;--ink:#f2f2f0;--mute:#9aa0a6;--rec:#ff3b30}
+*{box-sizing:border-box;min-width:0;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,"Noto Sans Arabic",sans-serif;overflow:hidden;user-select:none}
+button{font:inherit;color:inherit}
+.screen{position:fixed;inset:0;display:none;flex-direction:column}
+.screen.on{display:flex}
+header{display:flex;align-items:center;gap:8px;padding:14px 14px 10px}
+header h1{font-size:28px;margin:0;flex:1}
+header h2{font-size:19px;margin:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ib{width:44px;height:44px;border-radius:50%;border:0;background:var(--card);display:grid;place-items:center;font-size:20px}
+.btn{min-height:48px;padding:0 18px;border-radius:14px;border:1px solid var(--line);background:var(--card);font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn.rec{background:var(--rec);border-color:var(--rec);color:#fff}
+.btn.ghost{background:rgba(0,0,0,.55);border-color:rgba(255,255,255,.2);color:#fff}
+.btn:disabled{opacity:.4}
+/* home */
+#tourList{flex:1;overflow-y:auto;padding:4px 14px 100px;display:grid;gap:12px;align-content:start}
+.tcard{display:flex;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:10px;text-align:start;width:100%}
+.tcard img,.tcard .ph{width:96px;height:64px;border-radius:10px;object-fit:cover;background:#26292c;flex:none}
+.tcard b{display:block;font-size:17px}
+.tcard span{color:var(--mute);font-size:14px}
+.empty{color:var(--mute);text-align:center;padding:40px 20px;line-height:1.8}
+.empty svg{display:block;margin:0 auto 14px}
+.fab{position:fixed;bottom:22px;inset-inline:16px}
+.fab .btn{width:100%}
+/* tour */
+.viewer{position:relative;flex:1;background:#08090a;overflow:hidden;touch-action:none}
+#vgl{position:absolute;inset:0;width:100%;height:100%;display:block}
+.vtag{position:absolute;top:10px;inset-inline-start:10px;background:rgba(0,0,0,.6);padding:5px 12px;border-radius:999px;font-size:14px;pointer-events:none}
+.vtools{position:absolute;top:10px;inset-inline-end:10px;display:flex;flex-direction:column;gap:8px;align-items:flex-end}
+.chip{border:0;background:rgba(0,0,0,.6);color:#fff;border-radius:999px;padding:8px 14px;font-size:14px;min-height:38px}
+.chip.on{background:var(--rec)}
+.fitbox{position:absolute;bottom:12px;inset-inline:12px;background:rgba(0,0,0,.7);border-radius:14px;padding:10px 14px;display:none;align-items:center;gap:12px}
+.fitbox.on{display:flex}
+.fitbox input{flex:1;accent-color:var(--rec)}
+.fitbox span{font-size:13px;color:#ddd;white-space:nowrap}
+.vmsg{position:absolute;inset:0;display:none;place-items:center;text-align:center;color:var(--mute);padding:30px}
+.vmsg.on{display:grid}
+.fade{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity .22s}
+.fade.on{opacity:1}
+.strip{display:flex;gap:8px;overflow-x:auto;padding:10px 14px;scroll-snap-type:x mandatory;flex:none}
+.spot{flex:none;width:92px;scroll-snap-align:start;border:2px solid transparent;border-radius:12px;overflow:hidden;background:var(--card);padding:0}
+.spot.cur{border-color:var(--rec)}
+.spot img{display:block;width:100%;height:56px;object-fit:cover}
+.spot span{display:block;font-size:12px;padding:3px 0 5px;text-align:center}
+.actions{display:flex;gap:10px;padding:0 14px 16px;flex:none}
+.actions .btn{flex:1}
+/* capture */
+#capture{background:#000}
+#cv{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#cgl{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.ret{position:absolute;left:50%;top:50%;width:84px;height:84px;margin:-42px;pointer-events:none}
+.ret svg{width:100%;height:100%;transform:rotate(-90deg)}
+.rbg{fill:none;stroke:rgba(255,255,255,.75);stroke-width:3}
+.rfg{fill:none;stroke:var(--rec);stroke-width:6;stroke-dasharray:213.6;stroke-dashoffset:213.6}
+.darr{position:absolute;left:50%;top:50%;width:0;height:0;pointer-events:none}
+.darr i{position:absolute;left:-14px;top:-74px;width:28px;height:28px;display:block}
+.ctop{position:absolute;top:14px;inset-inline:14px;display:flex;gap:8px;flex-wrap:wrap}
+.pill{background:rgba(0,0,0,.6);color:#fff;padding:6px 12px;border-radius:999px;font-size:14px}
+.cbot{position:absolute;bottom:22px;inset-inline:14px;display:flex;gap:10px}
+.cbot .btn{flex:1}
+.aim{position:absolute;inset:auto 14px 22px;background:rgba(0,0,0,.75);border-radius:18px;padding:16px;display:none;text-align:center}
+.aim.on{display:block}
+.aim p{margin:0 0 12px}
+.aim .btn{width:100%}
+.flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;transition:opacity .25s}
+.flash.on{opacity:.7;transition:none}
+/* dialog */
+.dlg{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:flex-end;z-index:20}
+.dlg.on{display:flex}
+.dbox{background:var(--card);width:100%;border-radius:20px 20px 0 0;padding:20px 16px 22px}
+.dbox p{margin:0 0 14px;font-size:17px}
+.dbox input{width:100%;font-size:17px;padding:12px;border-radius:12px;border:1px solid var(--line);background:#111;color:var(--ink);margin-bottom:14px;user-select:text}
+.drow{display:flex;gap:10px}.drow .btn{flex:1}
+.dlist{display:grid;gap:8px;margin-bottom:12px}
+.dlist .btn{width:100%;justify-content:flex-start}
+.dlist .btn.danger{color:var(--rec)}
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#fff;color:#111;padding:10px 16px;border-radius:12px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:30;max-width:90vw;text-align:center}
+.toast.on{opacity:1}
+.busy{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;place-items:center;z-index:25;color:#fff}
+.busy.on{display:grid}
+</style>
+</head>
+<body>
+
+<section id="home" class="screen on">
+  <header><h1>رافد 360</h1></header>
+  <div id="tourList"></div>
+  <div class="fab"><button class="btn rec" id="newTour">+ جولة جديدة</button></div>
+</section>
+
+<section id="tour" class="screen">
+  <header><button class="ib" id="tBack" aria-label="رجوع">→</button><h2 id="tName"></h2><button class="ib" id="tMenu" aria-label="خيارات">⋯</button></header>
+  <div class="viewer" id="viewer">
+    <canvas id="vgl"></canvas>
+    <div class="vtag" id="vTag"></div>
+    <div class="vtools">
+      <button class="chip" id="gyroBtn">حرّك الجوال</button>
+      <button class="chip" id="fitBtn">ضبط الدمج</button>
+    </div>
+    <div class="fitbox" id="fitBox"><span>أصغر</span><input type="range" id="fitR" min="80" max="125" value="100"><span>أكبر</span></div>
+    <div class="vmsg" id="vMsg"></div>
+    <div class="fade" id="vFade"></div>
+  </div>
+  <div class="strip" id="spotStrip"></div>
+  <div class="actions">
+    <button class="btn rec" id="addSpot">● إضافة نقطة</button>
+    <button class="btn" id="exportBtn">حفظ 360 بالمعرض</button>
+  </div>
+</section>
+
+<section id="capture" class="screen">
+  <video id="cv" playsinline muted autoplay></video>
+  <canvas id="cgl"></canvas>
+  <div class="ret"><svg viewBox="0 0 80 80"><circle cx="40" cy="40" r="34" class="rbg"/><circle id="rFill" cx="40" cy="40" r="34" class="rfg"/></svg></div>
+  <div class="darr" id="dirArrow"><i><svg viewBox="0 0 28 28"><path d="M14 2 26 22H2Z" fill="#ff3b30" stroke="#fff" stroke-width="2"/></svg></i></div>
+  <div class="ctop"><span class="pill" id="cCount">0 صورة</span><span class="pill" id="cHint"></span></div>
+  <div class="cbot" id="cBot">
+    <button class="btn ghost" id="cCancel">إلغاء</button>
+    <button class="btn ghost" id="cUndo">تراجع</button>
+    <button class="btn rec" id="cDone">تم</button>
+  </div>
+  <div class="aim" id="aimBox">
+    <p>وجّه الجوال للاتجاه اللي مشيت فيه من النقطة السابقة، بعدين اضغط ابدأ.</p>
+    <button class="btn rec" id="aimGo">ابدأ التصوير</button>
+  </div>
+  <div class="flash" id="flash"></div>
+</section>
+
+<div class="dlg" id="dlg"><div class="dbox" id="dbox"></div></div>
+<div class="busy" id="busy"><span id="busyT">جاري المعالجة…</span></div>
+<div class="toast" id="toast"></div>
+
+<script src="three.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
