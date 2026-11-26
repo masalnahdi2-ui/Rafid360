@@ -5,6 +5,8 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.ContentValues
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.hardware.Sensor
@@ -23,6 +25,7 @@ import android.util.Base64
 import android.view.WindowManager
 import android.webkit.JavascriptInterface
 import android.webkit.PermissionRequest
+import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
@@ -39,6 +42,7 @@ class MainActivity : Activity(), SensorEventListener {
     private val quat = FloatArray(4)
     private var lastSend = 0L
     private var pendingRequest: PermissionRequest? = null
+    private var fileCallback: ValueCallback<Array<Uri>>? = null
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -76,6 +80,26 @@ class MainActivity : Activity(), SensorEventListener {
                     }
                 }
             }
+
+            override fun onShowFileChooser(
+                view: WebView,
+                callback: ValueCallback<Array<Uri>>,
+                params: FileChooserParams
+            ): Boolean {
+                fileCallback?.onReceiveValue(null)
+                fileCallback = callback
+                val intent = Intent(Intent.ACTION_GET_CONTENT)
+                intent.addCategory(Intent.CATEGORY_OPENABLE)
+                intent.type = "*/*"
+                intent.putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("image/*", "application/pdf"))
+                return try {
+                    startActivityForResult(Intent.createChooser(intent, null), REQ_FILE)
+                    true
+                } catch (e: Exception) {
+                    fileCallback = null
+                    false
+                }
+            }
         }
         web.addJavascriptInterface(Bridge(), "Android")
 
@@ -99,6 +123,15 @@ class MainActivity : Activity(), SensorEventListener {
         pendingRequest = null
         if (req != null) {
             if (ok) req.grant(req.resources) else req.deny()
+        }
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQ_FILE) {
+            fileCallback?.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(resultCode, data))
+            fileCallback = null
         }
     }
 
@@ -196,5 +229,6 @@ class MainActivity : Activity(), SensorEventListener {
     companion object {
         private const val REQ_CAMERA = 1
         private const val REQ_STARTUP = 2
+        private const val REQ_FILE = 3
     }
 }

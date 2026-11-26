@@ -5,20 +5,21 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>رافد 360</title>
 <style>
-:root{--bg:#0e0f10;--card:#1a1c1e;--line:#2b2e31;--ink:#f2f2f0;--mute:#9aa0a6;--rec:#ff3b30}
+:root{--bg:#0e0f10;--card:#1a1c1e;--line:#2b2e31;--ink:#f2f2f0;--mute:#9aa0a6;--rec:#ff3b30;--a:#3aa0ff;--b:#ffb020}
 *{box-sizing:border-box;min-width:0;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,"Noto Sans Arabic",sans-serif;overflow:hidden;user-select:none}
-button{font:inherit;color:inherit}
+button,select{font:inherit;color:inherit}
 .screen{position:fixed;inset:0;display:none;flex-direction:column}
 .screen.on{display:flex}
-header{display:flex;align-items:center;gap:8px;padding:14px 14px 10px}
+header{display:flex;align-items:center;gap:8px;padding:12px 14px 8px;flex:none}
 header h1{font-size:28px;margin:0;flex:1}
 header h2{font-size:19px;margin:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ib{width:44px;height:44px;border-radius:50%;border:0;background:var(--card);display:grid;place-items:center;font-size:20px}
-.btn{min-height:48px;padding:0 18px;border-radius:14px;border:1px solid var(--line);background:var(--card);font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.ib{width:44px;height:44px;border-radius:50%;border:0;background:var(--card);display:grid;place-items:center;font-size:20px;flex:none}
+.btn{min-height:48px;padding:0 16px;border-radius:14px;border:1px solid var(--line);background:var(--card);font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:8px}
 .btn.rec{background:var(--rec);border-color:var(--rec);color:#fff}
 .btn.ghost{background:rgba(0,0,0,.55);border-color:rgba(255,255,255,.2);color:#fff}
 .btn:disabled{opacity:.4}
+input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
 /* home */
 #tourList{flex:1;overflow-y:auto;padding:4px 14px 100px;display:grid;gap:12px;align-content:start}
 .tcard{display:flex;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:10px;text-align:start;width:100%}
@@ -30,13 +31,34 @@ header h2{font-size:19px;margin:0;flex:1;overflow:hidden;text-overflow:ellipsis;
 .fab{position:fixed;bottom:22px;inset-inline:16px}
 .fab .btn{width:100%}
 /* tour */
-.viewer{position:relative;flex:1;background:#08090a;overflow:hidden;touch-action:none}
+.seg{display:flex;margin:0 14px 8px;background:var(--card);border-radius:12px;padding:3px;flex:none}
+.seg button{flex:1;border:0;background:none;padding:8px;border-radius:10px;font-weight:600;color:var(--mute)}
+.seg button.on{background:#2d3034;color:var(--ink)}
+.stage{position:relative;flex:1;overflow:hidden;background:#08090a}
+.pane{position:absolute;inset:0;display:none}
+.pane.on{display:block}
+/* plan */
+#planView{touch-action:none;background:#e9e9e6}
+#planInner{position:absolute;left:0;top:0;transform-origin:0 0;direction:ltr}
+#planImg{display:block;pointer-events:none}
+.pin{position:absolute;width:0;height:0}
+.pin b{position:absolute;left:-15px;top:-15px;width:30px;height:30px;border-radius:50%;background:var(--rec);color:#fff;display:grid;place-items:center;font-size:13px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.4);transform:scale(var(--is,1))}
+.pin.cur b{background:#111}
+.pin .cone{position:absolute;left:-40px;top:-40px;width:80px;height:80px;transform:scale(var(--is,1)) rotate(var(--rot,0deg));pointer-events:none}
+.pin.new b{background:var(--a)}
+.planmsg{position:absolute;inset:0;display:none;place-items:center;text-align:center;color:#555;padding:30px;background:#e9e9e6}
+.planmsg.on{display:grid}
+.planmsg .btn{margin-top:14px}
+.placehint{position:absolute;top:10px;inset-inline:10px;background:var(--a);color:#fff;border-radius:12px;padding:10px 14px;text-align:center;display:none;font-weight:600}
+.placehint.on{display:block}
+/* viewer */
+#viewer{touch-action:none}
 #vgl{position:absolute;inset:0;width:100%;height:100%;display:block}
 .vtag{position:absolute;top:10px;inset-inline-start:10px;background:rgba(0,0,0,.6);padding:5px 12px;border-radius:999px;font-size:14px;pointer-events:none}
 .vtools{position:absolute;top:10px;inset-inline-end:10px;display:flex;flex-direction:column;gap:8px;align-items:flex-end}
-.chip{border:0;background:rgba(0,0,0,.6);color:#fff;border-radius:999px;padding:8px 14px;font-size:14px;min-height:38px}
+.chip{border:0;background:rgba(0,0,0,.6);color:#fff;border-radius:999px;padding:7px 13px;font-size:14px;min-height:36px}
 .chip.on{background:var(--rec)}
-.fitbox{position:absolute;bottom:12px;inset-inline:12px;background:rgba(0,0,0,.7);border-radius:14px;padding:10px 14px;display:none;align-items:center;gap:12px}
+.fitbox{position:absolute;bottom:12px;inset-inline:12px;background:rgba(0,0,0,.75);border-radius:14px;padding:10px 14px;display:none;align-items:center;gap:12px}
 .fitbox.on{display:flex}
 .fitbox input{flex:1;accent-color:var(--rec)}
 .fitbox span{font-size:13px;color:#ddd;white-space:nowrap}
@@ -44,13 +66,33 @@ header h2{font-size:19px;margin:0;flex:1;overflow:hidden;text-overflow:ellipsis;
 .vmsg.on{display:grid}
 .fade{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity .22s}
 .fade.on{opacity:1}
-.strip{display:flex;gap:8px;overflow-x:auto;padding:10px 14px;scroll-snap-type:x mandatory;flex:none}
-.spot{flex:none;width:92px;scroll-snap-align:start;border:2px solid transparent;border-radius:12px;overflow:hidden;background:var(--card);padding:0}
+#mini{position:absolute;bottom:12px;inset-inline-start:12px;width:112px;height:112px;border-radius:14px;border:2px solid rgba(255,255,255,.85);background:#e9e9e6;display:none}
+#mini.on{display:block}
+.split{position:absolute;top:0;bottom:0;width:0;display:none}
+.split.on{display:block}
+.split::before{content:"";position:absolute;top:0;bottom:0;left:-1.5px;width:3px;background:#fff;box-shadow:0 0 6px rgba(0,0,0,.6)}
+.split i{position:absolute;top:50%;left:-24px;width:48px;height:48px;margin-top:-24px;border-radius:50%;background:#fff;color:#111;display:grid;place-items:center;font-style:normal;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.5);touch-action:none}
+.dlab{position:absolute;top:56px;padding:4px 10px;border-radius:8px;font-size:13px;font-weight:600;color:#111;display:none;direction:rtl}
+.dlab.on{display:block}
+#labA{left:10px;background:var(--a)}#labB{right:10px;background:var(--b)}
+/* rows under stage */
+.caprow{display:flex;gap:8px;overflow-x:auto;padding:8px 14px 0;flex:none;align-items:center;min-height:48px}
+.cchip{flex:none;border:1px solid var(--line);background:var(--card);border-radius:999px;padding:6px 12px;font-size:14px}
+.cchip.on{background:var(--ink);color:#111;border-color:var(--ink)}
+.cmp{display:none;flex-direction:column;gap:8px;padding:8px 14px 0;flex:none}
+.cmp.on{display:flex}
+.cmp .r{display:flex;gap:8px;align-items:center}
+.cmp label{font-size:13px;color:var(--mute);white-space:nowrap}
+.cmp select{flex:1;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px;min-height:40px}
+.cmp input{flex:1;accent-color:var(--b)}
+.dot{width:10px;height:10px;border-radius:50%;flex:none}
+.strip{display:flex;gap:8px;overflow-x:auto;padding:8px 14px 0;flex:none}
+.spot{flex:none;width:84px;border:2px solid transparent;border-radius:12px;overflow:hidden;background:var(--card);padding:0}
 .spot.cur{border-color:var(--rec)}
-.spot img{display:block;width:100%;height:56px;object-fit:cover}
-.spot span{display:block;font-size:12px;padding:3px 0 5px;text-align:center}
-.actions{display:flex;gap:10px;padding:0 14px 16px;flex:none}
-.actions .btn{flex:1}
+.spot img{display:block;width:100%;height:50px;object-fit:cover}
+.spot span{display:block;font-size:12px;padding:2px 0 4px;text-align:center}
+.actions{display:flex;gap:10px;padding:10px 14px 14px;flex:none}
+.actions .btn{flex:1;padding:0 10px;font-size:15px}
 /* capture */
 #capture{background:#000}
 #cv{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
@@ -63,9 +105,12 @@ header h2{font-size:19px;margin:0;flex:1;overflow:hidden;text-overflow:ellipsis;
 .darr i{position:absolute;left:-14px;top:-74px;width:28px;height:28px;display:block}
 .ctop{position:absolute;top:14px;inset-inline:14px;display:flex;gap:8px;flex-wrap:wrap}
 .pill{background:rgba(0,0,0,.6);color:#fff;padding:6px 12px;border-radius:999px;font-size:14px}
+.ghostbar{position:absolute;top:58px;inset-inline:14px;background:rgba(0,0,0,.6);border-radius:12px;padding:8px 12px;display:none;align-items:center;gap:10px;color:#fff;font-size:13px}
+.ghostbar.on{display:flex}
+.ghostbar input{flex:1;accent-color:var(--b)}
 .cbot{position:absolute;bottom:22px;inset-inline:14px;display:flex;gap:10px}
 .cbot .btn{flex:1}
-.aim{position:absolute;inset:auto 14px 22px;background:rgba(0,0,0,.75);border-radius:18px;padding:16px;display:none;text-align:center}
+.aim{position:absolute;inset:auto 14px 22px;background:rgba(0,0,0,.78);border-radius:18px;padding:16px;display:none;text-align:center}
 .aim.on{display:block}
 .aim p{margin:0 0 12px}
 .aim .btn{width:100%}
@@ -76,12 +121,13 @@ header h2{font-size:19px;margin:0;flex:1;overflow:hidden;text-overflow:ellipsis;
 .dlg.on{display:flex}
 .dbox{background:var(--card);width:100%;border-radius:20px 20px 0 0;padding:20px 16px 22px}
 .dbox p{margin:0 0 14px;font-size:17px}
+.dbox .live{font-size:34px;font-weight:700;text-align:center;margin:4px 0 14px}
 .dbox input{width:100%;font-size:17px;padding:12px;border-radius:12px;border:1px solid var(--line);background:#111;color:var(--ink);margin-bottom:14px;user-select:text}
 .drow{display:flex;gap:10px}.drow .btn{flex:1}
 .dlist{display:grid;gap:8px;margin-bottom:12px}
 .dlist .btn{width:100%;justify-content:flex-start}
 .dlist .btn.danger{color:var(--rec)}
-.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#fff;color:#111;padding:10px 16px;border-radius:12px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:30;max-width:90vw;text-align:center}
+.toast{position:fixed;bottom:96px;left:50%;transform:translateX(-50%);background:#fff;color:#111;padding:10px 16px;border-radius:12px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:30;max-width:90vw;text-align:center}
 .toast.on{opacity:1}
 .busy{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;place-items:center;z-index:25;color:#fff}
 .busy.on{display:grid}
@@ -97,22 +143,38 @@ header h2{font-size:19px;margin:0;flex:1;overflow:hidden;text-overflow:ellipsis;
 
 <section id="tour" class="screen">
   <header><button class="ib" id="tBack" aria-label="رجوع">→</button><h2 id="tName"></h2><button class="ib" id="tMenu" aria-label="خيارات">⋯</button></header>
-  <div class="viewer" id="viewer">
-    <canvas id="vgl"></canvas>
-    <div class="vtag" id="vTag"></div>
-    <div class="vtools">
-      <button class="chip" id="gyroBtn">حرّك الجوال</button>
-      <button class="chip" id="fitBtn">ضبط الدمج</button>
+  <div class="seg" id="seg"><button data-v="plan">المخطط</button><button data-v="pano">360</button></div>
+  <div class="stage">
+    <div class="pane" id="planView">
+      <div id="planInner"><img id="planImg" alt=""><div id="pins"></div></div>
+      <div class="planmsg" id="planMsg"><div>ارفع مخطط الدور (صورة أو PDF)، وبعدها حدد مكان كل نقطة عليه.<br><button class="btn rec" id="planUp1">رفع مخطط</button></div></div>
+      <div class="placehint" id="placeHint">اضغط على مكانك في المخطط</div>
     </div>
-    <div class="fitbox" id="fitBox"><span>أصغر</span><input type="range" id="fitR" min="80" max="125" value="100"><span>أكبر</span></div>
-    <div class="vmsg" id="vMsg"></div>
-    <div class="fade" id="vFade"></div>
+    <div class="pane" id="viewer">
+      <canvas id="vgl"></canvas>
+      <div class="vtag" id="vTag"></div>
+      <div class="vtools">
+        <button class="chip" id="cmpBtn">مقارنة</button>
+        <button class="chip" id="gyroBtn">حرّك الجوال</button>
+        <button class="chip" id="fitBtn">ضبط الدمج</button>
+      </div>
+      <div class="dlab" id="labA"></div><div class="dlab" id="labB"></div>
+      <div class="split" id="split"><i>⇆</i></div>
+      <canvas id="mini" width="224" height="224"></canvas>
+      <div class="fitbox" id="fitBox"><span>أصغر</span><input type="range" id="fitR" min="80" max="125" value="100"><span>أكبر</span></div>
+      <div class="vmsg" id="vMsg"></div>
+      <div class="fade" id="vFade"></div>
+    </div>
+  </div>
+  <div class="caprow" id="capRow"></div>
+  <div class="cmp" id="cmpBox">
+    <div class="r"><span class="dot" style="background:var(--a)"></span><label>يسار</label><select id="selA"></select></div>
+    <div class="r"><span class="dot" style="background:var(--b)"></span><label>يمين</label><select id="selB"></select></div>
+    <div class="r"><label>محاذاة اليمين</label><input type="range" id="alignR" min="-200" max="200" value="0"></div>
   </div>
   <div class="strip" id="spotStrip"></div>
-  <div class="actions">
-    <button class="btn rec" id="addSpot">● إضافة نقطة</button>
-    <button class="btn" id="exportBtn">حفظ 360 بالمعرض</button>
-  </div>
+  <div class="actions" id="actions"></div>
+  <input type="file" id="planFile" accept="image/*,application/pdf">
 </section>
 
 <section id="capture" class="screen">
@@ -121,13 +183,14 @@ header h2{font-size:19px;margin:0;flex:1;overflow:hidden;text-overflow:ellipsis;
   <div class="ret"><svg viewBox="0 0 80 80"><circle cx="40" cy="40" r="34" class="rbg"/><circle id="rFill" cx="40" cy="40" r="34" class="rfg"/></svg></div>
   <div class="darr" id="dirArrow"><i><svg viewBox="0 0 28 28"><path d="M14 2 26 22H2Z" fill="#ff3b30" stroke="#fff" stroke-width="2"/></svg></i></div>
   <div class="ctop"><span class="pill" id="cCount">0 صورة</span><span class="pill" id="cHint"></span></div>
+  <div class="ghostbar" id="ghostBar"><span>الزيارة السابقة</span><input type="range" id="ghostR" min="0" max="90" value="45"></div>
   <div class="cbot" id="cBot">
     <button class="btn ghost" id="cCancel">إلغاء</button>
     <button class="btn ghost" id="cUndo">تراجع</button>
     <button class="btn rec" id="cDone">تم</button>
   </div>
   <div class="aim" id="aimBox">
-    <p>وجّه الجوال للاتجاه اللي مشيت فيه من النقطة السابقة، بعدين اضغط ابدأ.</p>
+    <p id="aimText"></p>
     <button class="btn rec" id="aimGo">ابدأ التصوير</button>
   </div>
   <div class="flash" id="flash"></div>
